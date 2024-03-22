@@ -1,8 +1,18 @@
 <head>
-    <script src="./main.js" type="module"></script>
+    <!-- typescript hack -->
+    <script>var exports = {};</script>
+    <script src="./js/main.js" type="module"></script>
+    <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-    <div>
-        <img id="img" style="height:800px; width:auto;">
+    <div id="main">
+        <div id="ingredients">
+        </div>
+        <div id="boards">
+            <div id="mine">
+                <button id="drawButton">Draw 3 cards</button>
+            </div>
+            <div id="other"></div>
+        </div>
     </div>
 </body>
