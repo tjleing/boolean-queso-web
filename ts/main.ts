@@ -20,14 +20,14 @@ function constructDOM() {
         const tooltipDiv = document.createElement("span");
         tooltipDiv.className = "tooltipText";
         const ing = ingredients.get(availableIngredients[i]);
-        console.log(i);
-        console.log(availableIngredients);
-        console.log(ing);
         tooltipDiv.innerHTML = `${ing.name}: ${ing.cost}/${ing.power}<br><br>`;
         if (ing.effectText !== "") {
             tooltipDiv.innerHTML += `${ing.effectText}<br><br>`;
         }
-        tooltipDiv.innerHTML += `${ing.flavorText}`;
+        tooltipDiv.innerHTML += `<i>${ing.flavorText}</i>`;
+
+        div.onclick = selectCard.bind(null, i);
+
         div.appendChild(tooltipDiv);
         ingredientDiv.appendChild(div);
         ingredientDOMs.push(ingredientSpan);
@@ -52,6 +52,17 @@ function start() {
     }
 
     constructDOM();
+}
+
+// mark card as being selected; show available locations
+function selectCard(i: number) {
+    const div = ingredientDOMs[i];
+    if (div.style.border === "") {
+        div.style.border = "1px solid red";
+    }
+    else {
+        div.style.border = "";
+    }
 }
 
 // draw 3 random ingredients from the options

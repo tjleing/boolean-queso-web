@@ -10,20 +10,24 @@
     flex-direction: column;
     justify-content: space-around;
     height: 100%;
-    flex-grow: 1;
     border: 1px solid black;
+    width: 27%;
 }
 
 #ingredients > div {
     display: flex;
     justify-content: space-around;
+
+    & :first-child {
+        padding: 5px;
+    }
 }
 
 #boards {
     display: flex;
     flex-direction: column;
     height: 100%;
-    flex-grow: 4;
+    width: 73%;
     align-items: stretch;
     /* justify-content: space-around; */
 }
