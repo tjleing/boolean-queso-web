@@ -1,19 +1,36 @@
-import {ingredients} from './ingredients'
+import {ingredients} from './ingredients';
 
 var availableIngredients: string[] = [
+    "white bread",
     "bacon",
-    "tomato",
-    "ranch"
+    // "tomato",
+    // "ranch"
 ];
 var ingredientCounts: number[] = Array(availableIngredients.length).fill(0);
 const ingredientDiv = document.getElementById("ingredients");
-var ingredientDOMs: HTMLDivElement[] = [];
+var ingredientDOMs: HTMLSpanElement[] = [];
 
 function constructDOM() {
+    ingredientDiv.innerHTML = "";
     for (let i in availableIngredients) {
         const div = document.createElement("div");
+        div.className = "tooltip";
+        const ingredientSpan = document.createElement("span");
+        div.appendChild(ingredientSpan);
+        const tooltipDiv = document.createElement("span");
+        tooltipDiv.className = "tooltipText";
+        const ing = ingredients.get(availableIngredients[i]);
+        console.log(i);
+        console.log(availableIngredients);
+        console.log(ing);
+        tooltipDiv.innerHTML = `${ing.name}: ${ing.cost}/${ing.power}<br><br>`;
+        if (ing.effectText !== "") {
+            tooltipDiv.innerHTML += `${ing.effectText}<br><br>`;
+        }
+        tooltipDiv.innerHTML += `${ing.flavorText}`;
+        div.appendChild(tooltipDiv);
         ingredientDiv.appendChild(div);
-        ingredientDOMs.push(div);
+        ingredientDOMs.push(ingredientSpan);
     }
 
     draw();

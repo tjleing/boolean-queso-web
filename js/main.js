@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var ingredients_1 = require("./ingredients");
 var availableIngredients = [
     "bacon",
     "tomato",
@@ -9,10 +10,21 @@ var ingredientCounts = Array(availableIngredients.length).fill(0);
 var ingredientDiv = document.getElementById("ingredients");
 var ingredientDOMs = [];
 function constructDOM() {
+    console.log("???");
     for (var i in availableIngredients) {
         var div = document.createElement("div");
+        div.className = "tooltip";
+        var ingredientSpan = document.createElement("span");
+        div.appendChild(ingredientSpan);
+        var tooltipSpan = document.createElement("span");
+        tooltipSpan.className = "tooltipText";
+        var ing = ingredients_1.ingredients.get(availableIngredients[i]);
+        tooltipSpan.innerText = "".concat(ing.name, ": ").concat(ing.cost, "/").concat(ing.power, "\n");
+        tooltipSpan.innerText += "".concat(ing.effectText, "\n");
+        tooltipSpan.innerText += "".concat(ing.flavorText);
+        div.appendChild(tooltipSpan);
         ingredientDiv.appendChild(div);
-        ingredientDOMs.push(div);
+        ingredientDOMs.push(ingredientSpan);
     }
     draw();
     document.getElementById("drawButton").onclick = drawCards;

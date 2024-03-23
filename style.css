@@ -32,3 +32,50 @@
     border: 1px solid black;
     height: 100%;
 }
+
+/* took all this from Voynich lol, maybe that's from something else too */
+.tooltip {
+	position: relative;
+}
+
+.tooltip .tooltipText {
+	opacity: 0;
+	width: 100%;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    padding: 5px 0px;
+    border-radius: 6px;
+	position: absolute;
+	z-index: 1;
+    top: 100%;
+    left: 50%;
+    margin-left: -50%; /* Use half of the width to center the tooltip */
+	font-size: 14px;
+	background: rgba(20, 20, 20, 0.8);
+	transition: opacity 0.5s;
+	pointer-events: none;
+}
+
+.tooltip .tooltipText::after {
+    content: " ";
+    position: absolute;
+    bottom: 100%; /* At the bottom of the tooltip */
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent black transparent;
+}
+
+.tooltipTextInner {
+	padding: 0px 5px;
+}
+
+.tooltip:hover .tooltipText {
+	opacity: 1;
+}
+
+.tooltip .tooltipText:hover {
+    opacity: 0; /* Get tooltip out of the way of clicks */
+}
