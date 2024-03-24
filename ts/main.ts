@@ -1,4 +1,5 @@
-import {ingredients} from './ingredients';
+import { ingredients } from './ingredients';
+import { ActionPoints } from './actionpoints';
 
 var availableIngredients: string[] = [
     "white bread",
@@ -11,11 +12,12 @@ const ingredientDiv = document.getElementById("ingredients");
 var ingredientDOMs: HTMLSpanElement[] = [];
 const boardDiv = document.getElementById("myBoard");
 var stackDOMs: HTMLDivElement[] = [];
+var actionPoints = new ActionPoints();
 
 function constructDOM() {
     // per ingredient, create a "station" in the left bar from which to drag ingredients
     ingredientDiv.innerHTML = "";
-    for (let i in availableIngredients) {
+    for (let i = 0; i<availableIngredients.length; ++i) {
         const div = document.createElement("div");
         div.className = "tooltip";
         div.draggable = true;
@@ -30,8 +32,10 @@ function constructDOM() {
         }
         tooltipDiv.innerHTML += `<i>${ing.flavorText}</i>`;
 
-        div.onclick = selectCard.bind(null, i);
         div.ondragstart = dragCard.bind(null, i);
+        div.ondragend = stopDrag;
+        div.onmouseover = hoverCard.bind(null, i);
+        div.onmouseout = unhoverCard;
 
         div.appendChild(tooltipDiv);
         ingredientDiv.appendChild(div);
@@ -42,9 +46,9 @@ function constructDOM() {
     boardDiv.innerHTML = "";
     createEmptyStack();
 
-    draw();
+    render();
 
-    document.getElementById("drawButton").onclick = drawCards;
+    document.getElementById("endTurnButton").onclick = endTurn;
 }
 
 function createEmptyStack() {
@@ -57,10 +61,46 @@ function createEmptyStack() {
     stackDOMs.push(div);
 }
 
+// can this ingredient be played currently?  nothing about which stacks are possible right now
+function canPlay(ingId: number) {
+    const ing = ingredients.get(availableIngredients[ingId]);
+    return (ing.cost <= actionPoints.current && ingredientCounts[ingId] > 0);
+}
+
+function hoverCard(ingId: number, ev: MouseEvent) {
+    const elt = (ev.target as HTMLElement).parentElement;
+    if (canPlay(ingId)) {
+        elt.classList.add("canPlay");
+    }
+    else {
+        elt.classList.add("cantPlay");
+    }
+}
+
+function unhoverCard(ev: MouseEvent) {
+    const elt = (ev.target as HTMLElement).parentElement;
+    elt.classList.remove("canPlay");
+    elt.classList.remove("cantPlay");
+}
+
 // start dragging card to play
 function dragCard(ingId: number, ev: DragEvent) {
-    ev.dataTransfer.setData("ingId", ingId.toString());
-    ev.dataTransfer.dropEffect = "copy";
+    if (!canPlay(ingId)) {
+        ev.preventDefault();
+        return;
+    }
+    else {
+        const ing = ingredients.get(availableIngredients[ingId]);
+        ev.dataTransfer.setData("ingId", ingId.toString());
+        ev.dataTransfer.dropEffect = "copy";
+        (ev.target as HTMLElement).classList.add("dragging");
+        actionPoints.tentativeSpend(ing.cost);
+    }
+}
+
+function stopDrag(ev: DragEvent) {
+    (ev.target as HTMLElement).classList.remove("dragging");
+    actionPoints.clearSpend();
 }
 
 function dropHandler(stackId: number, event: DragEvent) {
@@ -71,7 +111,8 @@ function dropHandler(stackId: number, event: DragEvent) {
     const ingName = availableIngredients[ingId];
     span.innerText = ingredients.get(ingName).name;
     ingredientCounts[ingId]--;
-    draw();
+    actionPoints.spend();
+    render();
     div.appendChild(span);
     stackDOMs[stackId].insertBefore(div, stackDOMs[stackId].firstChild);
 }
@@ -80,31 +121,34 @@ function dragOverHandler(event: DragEvent) {
     event.preventDefault();
 }
 
-function draw() {
-    for (let i in ingredientDOMs) {
+function render() {
+    for (let i = 0; i<ingredientDOMs.length; ++i) {
         const ing = availableIngredients[i];
         ingredientDOMs[i].innerText =
             `${ing}: ${ingredientCounts[i]}`;
     }
+    actionPoints.render();
 }
 
 function start() {
-    for (let i in availableIngredients) {
+    for (let i = 0; i<ingredientCounts.length; ++i) {
         ingredientCounts[i] = 0;
     }
 
     constructDOM();
 }
 
-// mark card as being selected; show available locations
-function selectCard(i: number) {
-    const div = ingredientDOMs[i];
-    if (div.style.border === "") {
-        div.style.border = "1px solid red";
-    }
-    else {
-        div.style.border = "";
-    }
+// handle end turn logic:
+// if online, wait for other player
+// then:
+// handle faster player's cards played & completed sandwich effects
+// handle slower ---
+// refill action points
+// draw cards
+function endTurn() {
+    actionPoints.endTurn();
+    drawCards();
+    render();
 }
 
 // draw 3 random ingredients from the options
@@ -115,7 +159,7 @@ function drawCards() {
         ingredientCounts[randomIndex]++;
     }
 
-    draw();
+    render();
 }
 
 start();

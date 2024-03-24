@@ -3,6 +3,17 @@
     flex-direction: row;
     width: 100%;
     height: 100%;
+
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
+}
+
+#gameplay {
+    display: flex;
+    flex-direction: column;
+    width: 27%;
+    border: 1px solid black;
 }
 
 #ingredients {
@@ -10,8 +21,7 @@
     flex-direction: column;
     justify-content: space-around;
     height: 100%;
-    border: 1px solid black;
-    width: 27%;
+    width: 100%;
 }
 
 #ingredients > div {
@@ -85,4 +95,16 @@
 
 .tooltip .tooltipText:hover {
     opacity: 0; /* Get tooltip out of the way of clicks */
+}
+
+.dragging {
+    opacity: 0.5;
+}
+
+.canPlay {
+    border: 1px solid green;
+}
+
+.cantPlay {
+    border: 1px solid red;
 }
