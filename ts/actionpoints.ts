@@ -10,7 +10,7 @@ export class ActionPoints {
         this.tentative = 0;
     }
 
-    endTurn() {
+    startTurn() {
         if (this.total !== 10) {
             this.total++;
         }

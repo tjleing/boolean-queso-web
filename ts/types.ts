@@ -15,7 +15,9 @@ export interface Ingredient {
     flavorText: string;
 }
 
-export interface Sandwich {
-    ingredients: Ingredient[];
-    isClosed: boolean;
+export enum TurnState {
+    SELECTING_DECK,
+    TURN_ACTIVE,
+    ANIMS_PLAYING,
+    GAME_END
 }
