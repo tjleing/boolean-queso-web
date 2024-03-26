@@ -40,6 +40,6 @@ export class ActionPoints {
         text += "🟨".repeat(this.tentative);
         text += "🟥".repeat(this.total - this.current);
 
-        this.span.innerText = text;
+        this.span.textContent = text;
     }
 }
