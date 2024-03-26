@@ -8,7 +8,7 @@ const whiteBread: Ingredient = {
     effect: (sandwich: Sandwich) => {
         sandwich.ingredients.map((ing) => {ing.power++; return ing;})
     },
-    type: IngredientType.MEAT,
+    type: IngredientType.BREAD,
     effectText: "",
     flavorText: "the plainest option"
 }

@@ -1,10 +1,11 @@
 import { ANIM_TIMEOUT } from "./constants";
-import { Animatable, Ingredient } from "./types";
+import { Animatable, Ingredient, IngredientType } from "./types";
 
 export class Sandwich implements Animatable {
     ingredients: Ingredient[] = [];
     private div: HTMLDivElement;
     animationDoneCallback: () => void;
+    sandwichStartedCallback: () => void;
     private spansAddedThisTurn: HTMLSpanElement[] = [];
     private namesAddedThisTurn: string[] = [];
 
@@ -18,7 +19,30 @@ export class Sandwich implements Animatable {
         }
     }
 
-    addIngredient(ing: Ingredient) {
+    canAddIngredient(ing: Ingredient): boolean {
+        if (this.ingredients.length === 0) {
+            // we're starting a new sandwich, has to be a bread
+            if (ing.type !== IngredientType.BREAD) return false;
+        }
+        return true;
+    }
+
+    showIfValidTarget(ing: Ingredient) {
+        if (this.canAddIngredient(ing)) {
+            this.div.style.background = "seagreen";
+        }
+        else {
+            this.div.style.background = "tomato";
+        }
+    }
+
+    clearTargetColors() {
+        this.div.style.background = "lightgrey";
+    }
+
+    addIngredient(ing: Ingredient): boolean {
+        if (!this.canAddIngredient) return false;
+
         const div = document.createElement("div");
         const span = document.createElement("span");
         span.textContent = ing.name;
@@ -27,8 +51,13 @@ export class Sandwich implements Animatable {
         this.div.insertBefore(div, this.div.firstChild);
         this.spansAddedThisTurn.push(span);
         this.namesAddedThisTurn.push(ing.name);
-        console.log(this.spansAddedThisTurn);
-        console.log(this.namesAddedThisTurn);
+
+        // sandwich is opened, create a new stack
+        if (this.ingredients.length === 1) {
+            this.sandwichStartedCallback();
+        }
+
+        return true;
     }
 
     prepAnimate() {
