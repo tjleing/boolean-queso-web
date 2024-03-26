@@ -1,4 +1,5 @@
-import {IngredientType, Ingredient, Sandwich} from "./types";
+import { IngredientType, Ingredient } from "./types";
+import { Sandwich } from "./sandwich";
 
 const whiteBread: Ingredient = {
     name: "white bread",
