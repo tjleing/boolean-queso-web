@@ -21,3 +21,8 @@ export enum TurnState {
     ANIMS_PLAYING,
     GAME_END
 }
+
+export interface Animatable {
+    animationDoneCallback: () => void;
+    animate: () => void;
+}

@@ -9,6 +9,7 @@ probably need to do `npm install --save-dev webpack webpack-cli typescript ts-lo
 - [x] basic UI skeleton
 - [x] tooltips to show cost/power/effect
 - [x] end turn and deal with action points
+- [x] refactor to game class with different players possible; handle event state machine
 - [ ] play new sandwiches with bread
 - [ ] add ingredient to sandwich, apply if condiment
 - [ ] close sandwich: get points and apply effects

@@ -2,6 +2,7 @@ import { ActionPoints } from "./actionpoints";
 import { ingredients } from "./ingredients";
 import { Player } from "./player";
 import { Sandwich } from "./sandwich";
+import { Animatable } from "./types";
 
 export class LocalPlayer implements Player {
     score: number;
@@ -21,6 +22,7 @@ export class LocalPlayer implements Player {
     private boardDiv = document.getElementById("myBoard");
     private sandwiches: Sandwich[] = [];
     private actionPoints = new ActionPoints();
+    private endTurnButton = document.getElementById("endTurnButton") as HTMLButtonElement;
 
     startDeckSelect() {
         // TODO: actually select a deck here
@@ -69,30 +71,31 @@ export class LocalPlayer implements Player {
 
         this.render();
 
-        document.getElementById("endTurnButton").onclick = this.endTurn.bind(this);
+        this.endTurnButton.onclick = this.endTurn.bind(this);
     }
 
     private render() {
         for (let i = 0; i<this.ingredientDOMs.length; ++i) {
             const ing = this.availableIngredients[i];
-            this.ingredientDOMs[i].innerText =
+            this.ingredientDOMs[i].textContent =
                 `${ing}: ${this.ingredientCounts[i]}`;
         }
-        // for (const sandwich of sandwiches) {
-        //     sandwich.render();
-        // }
         this.actionPoints.render();
     }
 
     startTurn() {
+        this.endTurnButton.textContent = "End turn";
+        this.endTurnButton.disabled = false;
+
         this.actionPoints.startTurn();
         this.drawCards();
         this.render();
     }
 
     private endTurn() {
-        // TODO: some sort of UI change to show that turn is ended, waiting for
-        // other players
+        this.endTurnButton.textContent = "waiting...";
+        this.endTurnButton.disabled = true;
+        
         this.turnEndCallback();
     }
 
@@ -106,7 +109,6 @@ export class LocalPlayer implements Player {
 
         this.render();
     }
-
 
 
 
@@ -132,11 +134,13 @@ export class LocalPlayer implements Player {
     private createEmptyStack() {
         const div = document.createElement("div");
         
-        div.ondrop = () => alert("asdf");
-        // div.ondrop = this.dropHandler.bind(this, 0);
+        div.ondrop = this.dropHandler.bind(this, 0);
+        div.ondragenter = (ev: DragEvent) => ev.preventDefault();
+        div.ondragover = (ev: DragEvent) => ev.preventDefault();
 
         this.boardDiv.appendChild(div);
         const sandwich = new Sandwich(div);
+        sandwich.animationDoneCallback = this.playAnimation.bind(this);
         this.sandwiches.push(sandwich);
     }
 
@@ -190,21 +194,32 @@ export class LocalPlayer implements Player {
         ev.stopPropagation();
         ev.preventDefault();
         const ingId = ev.dataTransfer.getData("ingId");
-        const div = document.createElement("div");
-        const span = document.createElement("span");
-        const ingName = this.availableIngredients[ingId];
-        span.innerText = ingredients.get(ingName).name;
+        const ing = ingredients.get(this.availableIngredients[ingId]);
         this.ingredientCounts[ingId]--;
         this.actionPoints.spend();
         this.render();
-        div.appendChild(span);
 
-        const stackDiv = this.sandwiches[stackId].div;
-        stackDiv.insertBefore(div, stackDiv.firstChild);
+        this.sandwiches[stackId].addIngredient(ing);
     }
 
+    animationCounter = 0;
+    animations: Animatable[] = [];
     startPlayingAnimations() {
-        // TODO: yeah animations need to happen here
-        this.animationEndCallback();
+        this.animationCounter = 0;
+        this.animations = [];
+        for(const sandwich of this.sandwiches) {
+            this.animations.push(sandwich);
+            sandwich.prepAnimate();
+        }
+        this.playAnimation();
+    }
+
+    playAnimation() {
+        if(this.animationCounter >= this.animations.length) {
+            this.animationEndCallback();
+        }
+        else {
+            this.animations[this.animationCounter++].animate();
+        }
     }
 }
