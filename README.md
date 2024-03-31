@@ -1,6 +1,6 @@
 ## development instructions:
 to build TS into a bundled JS file automatically: `webpack`
-then just open index.html (need to refresh when code change is made)
+then run a live server (I'm using VS code Live Server extension)
 
 probably need to do `npm install --save-dev webpack webpack-cli typescript ts-loader` first
 
@@ -11,8 +11,9 @@ probably need to do `npm install --save-dev webpack webpack-cli typescript ts-lo
 - [x] end turn and deal with action points
 - [x] refactor to game class with different players possible; handle event state machine
 - [x] animate ingredients added (needs to be extended to non-local player cards too)
-- [ ] play new sandwiches with bread
-- [ ] add ingredient to sandwich, apply if condiment
+- [x] play new sandwiches with bread
+- [x] add ingredient to sandwich
+  - [x] apply effect if condiment
 - [ ] close sandwich: get points and apply effects
 - [ ] start screen where you can choose a deck
 - [ ] AI opponent

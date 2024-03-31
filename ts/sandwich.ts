@@ -52,6 +52,11 @@ export class Sandwich implements Animatable {
         this.spansAddedThisTurn.push(span);
         this.namesAddedThisTurn.push(ing.name);
 
+        // condiments have instant effects
+        if (ing.type === IngredientType.CONDIMENT) {
+            ing.effect(this);
+        }
+
         // sandwich is opened, create a new stack
         if (this.ingredients.length === 1) {
             this.sandwichStartedCallback();
