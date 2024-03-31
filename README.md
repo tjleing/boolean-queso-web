@@ -16,7 +16,7 @@ probably need to do `npm install --save-dev webpack webpack-cli typescript ts-lo
   - [x] apply effect if condiment
 - [ ] close sandwich: get points and apply effects
 - [ ] start screen where you can choose a deck
-- [ ] AI opponent
+- [x] AI opponent
 - [ ] networking opponent
 
 extension:
