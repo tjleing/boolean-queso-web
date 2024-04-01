@@ -4,13 +4,14 @@ import { Player } from "./player";
 import { Sandwich } from "./sandwich";
 import { Animatable, Ingredient } from "./types";
 
-export class LocalPlayer implements Player {
+export class LocalPlayer extends Player {
     score: number;
     deckSelectEndCallback: () => void;
     turnEndCallback: () => void;
     animationEndCallback: () => void;
 
-    private ingredientDiv = document.getElementById("ingredients");
+    private ingredientDiv: HTMLDivElement;
+    private boardDiv: HTMLDivElement;
     private availableIngredients: string[] = [
         "white bread",
         "bacon",
@@ -19,14 +20,19 @@ export class LocalPlayer implements Player {
     ];
     private ingredientCounts: number[] = Array(this.availableIngredients.length).fill(0);
     private ingredientDOMs: HTMLSpanElement[] = [];
-    private boardDiv = document.getElementById("myBoard");
-    private sandwiches: Sandwich[] = [];
     private actionPoints = new ActionPoints();
     private endTurnButton = document.getElementById("endTurnButton") as HTMLButtonElement;
 
     // due to security concerns, the drag/drop API blocks any info on the
     // currently dragged item until it's dropped, so we need to store the info here
     private currentlyDraggedIngredient: Ingredient;
+
+    constructor(ingredientDiv, boardDiv) {
+        super();
+        this.ingredientDiv = ingredientDiv;
+        this.boardDiv = boardDiv;
+        this.sandwiches = [];
+    }
 
     startDeckSelect() {
         // TODO: actually select a deck here
@@ -39,6 +45,7 @@ export class LocalPlayer implements Player {
         }
 
         this.constructDOM();
+        this.startTurn();
     }
 
     private constructDOM() {
@@ -136,20 +143,19 @@ export class LocalPlayer implements Player {
     // call them anyways so that's fun, maybe just pass the game who knows..
     // so this needs to become a game class?  I love replicating Voynich actually
     private createEmptyStack() {
+        // cap sandwich count at 6
+        if (this.sandwiches.length >= 6) return;
+
         const div = document.createElement("div");
         const sandwich = new Sandwich(div);
         
         div.ondrop = this.dropHandler.bind(this, this.sandwiches.length);
         div.ondragenter = this.canDropCurrentlyHeld.bind(this, this.sandwiches.length);
         div.ondragover = this.canDropCurrentlyHeld.bind(this, this.sandwiches.length);
-        div.ondragleave = (ev: DragEvent) => {
-            console.log(ev);
-            // clear sandwich bg
-        }
 
         this.boardDiv.appendChild(div);
-        sandwich.animationDoneCallback = this.playAnimation.bind(this);
         sandwich.sandwichStartedCallback = this.createEmptyStack.bind(this);
+        sandwich.animationDoneCallback = this.sandwichAnimationEndCallback;
         this.sandwiches.push(sandwich);
     }
 
@@ -189,8 +195,6 @@ export class LocalPlayer implements Player {
 
             // show valid targets
             for (const sandwich of this.sandwiches) {
-                console.log(sandwich);
-                console.log(this.currentlyDraggedIngredient);
                 sandwich.showIfValidTarget(this.currentlyDraggedIngredient);
             }
 
@@ -223,9 +227,7 @@ export class LocalPlayer implements Player {
 
         const ingId = ev.dataTransfer.getData("ingId");
         const ing = ingredients.get(this.availableIngredients[ingId]);
-        console.log(ing.name);
         if(this.sandwiches[stackId].addIngredient(ing)) {
-            console.log("and we're in");
             ev.preventDefault();
             this.ingredientCounts[ingId]--;
             this.actionPoints.spend();
@@ -233,24 +235,4 @@ export class LocalPlayer implements Player {
         }
     }
 
-    animationCounter = 0;
-    animations: Animatable[] = [];
-    startPlayingAnimations() {
-        this.animationCounter = 0;
-        this.animations = [];
-        for(const sandwich of this.sandwiches) {
-            this.animations.push(sandwich);
-            sandwich.prepAnimate();
-        }
-        this.playAnimation();
-    }
-
-    playAnimation() {
-        if(this.animationCounter >= this.animations.length) {
-            this.animationEndCallback();
-        }
-        else {
-            this.animations[this.animationCounter++].animate();
-        }
-    }
 }

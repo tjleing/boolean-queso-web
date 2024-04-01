@@ -1,5 +1,5 @@
 import { Player } from "./player";
-import { TurnState } from "./types";
+import { Animatable, TurnState } from "./types";
 
 export class Game {
     players: Player[];
@@ -14,7 +14,7 @@ export class Game {
         for(const player of players) {
             player.turnEndCallback = this.endTurnForPlayer.bind(this);
             player.deckSelectEndCallback = this.selectDeckForPlayer.bind(this);
-            player.animationEndCallback = this.endAnimationsForPlayer.bind(this);
+            player.sandwichAnimationEndCallback = this.playAnimation.bind(this);
             player.startDeckSelect();
         }
         this.turnState = TurnState.SELECTING_DECK;
@@ -23,34 +23,46 @@ export class Game {
     private selectDeckForPlayer() {
         this.deckSelects++;
         if (this.deckSelects === this.players.length) {
+            this.deckSelects = 0;
             this.turnState = TurnState.TURN_ACTIVE;
             for (const player of this.players) {
                 player.startGame();
             }
-            this.deckSelects = 0;
         }
     }
 
+    // TODO: hmm actually we only apply the sandwich close effects _here_ -- interesting
+    // TODO: turn order
+    // TODO: guessing we want some sort of UI that's like "oh no your opponent has a win
+    //          on the board, you'd better have closed a sandwich" during this
     private endTurnForPlayer() {
         this.turnEnds++;
         if (this.turnEnds === this.players.length) {
-            this.turnState = TurnState.ANIMS_PLAYING;
-            for (const player of this.players) {
-                player.startPlayingAnimations();
-            }
             this.turnEnds = 0;
+            this.turnState = TurnState.ANIMS_PLAYING;
+            this.animationCounter = 0;
+            this.animations = [];
+            for (const player of this.players) {
+                const anims = player.getAnimationActions();
+                this.animations.push(...anims);
+            }
+
+            this.playAnimation();
         }
     }
+    private animationCounter: number;
+    private animations: Animatable[];
 
-    private endAnimationsForPlayer() {
-        this.animationEnds++;
-        if (this.animationEnds === this.players.length) {
+    protected playAnimation() {
+        if(this.animationCounter >= this.animations.length) {
             this.turnState = TurnState.TURN_ACTIVE;
             // TODO: ... unless the game is over, in that case go to that state instead
             for (const player of this.players) {
                 player.startTurn();
             }
-            this.animationEnds = 0;
+        }
+        else {
+            this.animations[this.animationCounter++].animate();
         }
     }
 }

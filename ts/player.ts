@@ -1,16 +1,22 @@
-export interface Player {
+import { Sandwich } from "./sandwich";
+import { Animatable } from "./types";
+
+export class Player {
     score: number;
-    deckSelectEndCallback: () => void;
-    turnEndCallback: () => void;
-    animationEndCallback: () => void;
-    startDeckSelect: () => void;
-    startGame: () => void;
-    startTurn: () => void;
-    startPlayingAnimations: () => void;
+    deckSelectEndCallback(): void {}
+    turnEndCallback(): void {}
+    sandwichAnimationEndCallback(): void {}
+    startDeckSelect(): void {}
+    startGame(): void {}
+    startTurn(): void {}
+
+    protected sandwiches: Sandwich[];
+    getAnimationActions(): Sandwich[] {
+        const animations = [];
+        for(const sandwich of this.sandwiches) {
+            animations.push(sandwich);
+            sandwich.prepAnimate();
+        }
+        return animations;
+    }
 }
-
-// TODO: I think most of the DOM stuff at least goes in here actually
-//   in particular handling of the animations should be abstracted, it's
-//   the same across the player types
-
-// animations: set texts to ??? and then fade in or smth
