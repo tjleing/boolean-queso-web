@@ -26,3 +26,17 @@ export interface Animatable {
     animationDoneCallback: () => void;
     animate: () => void;
 }
+
+export class IngredientAddEvent {
+    name: string;
+    span: HTMLSpanElement;
+}
+
+export class IngredientEffectEvent {
+    ing: Ingredient;
+    span: HTMLSpanElement;
+}
+
+export type SandwichAnimateEvent =
+    IngredientAddEvent |
+    IngredientEffectEvent

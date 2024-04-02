@@ -47,18 +47,29 @@
     height: 100%;
 
     > div {
-        min-width: 10%;
+        min-width: 14%;
         padding: 2%;
-        margin: 10% 3%;
         display: flex;
         flex-direction: column;
-        justify-content: flex-end;
-        background: lightgrey;
 
-        > div {
-            width: 100%;
+        :first-child {
+            text-align: center;
+        }
+
+        #sandwich {
+            margin: 10% 3%;
+            padding: 10% 2%;
+            height: 100%;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            justify-content: flex-end;
+            background: lightgrey;
+
+            > div {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
         }
     }
     display: flex;

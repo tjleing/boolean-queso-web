@@ -1,4 +1,5 @@
 import { ActionPoints } from "./actionpoints";
+import { MAX_SANDWICH_COUNT } from "./constants";
 import { ingredients } from "./ingredients";
 import { Player } from "./player";
 import { Sandwich } from "./sandwich";
@@ -121,30 +122,9 @@ export class LocalPlayer extends Player {
         this.render();
     }
 
-
-
-    // TODO: need to revisit this, but I'm putting it here to make sure the
-    // refactor went through correctly
-
-    // TODO:
-    // - move this logic to sandwich class
-    // - also critically the drop handler also is really important here
-    // - ... well the drop handler is only important to the local player, the AI/remote
-    //    players wouldn't need a drop handler.  so maybe we UML the three subtypes
-    //    of player and let them figure out the different 
-
-    // TODO:
-    // um so does a sandwich own a stack?  maybe that's fine?  an empty sandwich can
-    // just have an empty stack I guess.  the important logic is that adding bread
-    // to a stack needs to open a new empty, which is a little rough dependency wise.
-    // maybe we pass a callback function that creates the stack?  maybe I'm learning
-    // something since Voynich
-    // ... although for the on complete callbacks I think I need the game state to
-    // call them anyways so that's fun, maybe just pass the game who knows..
-    // so this needs to become a game class?  I love replicating Voynich actually
     private createEmptyStack() {
-        // cap sandwich count at 6
-        if (this.sandwiches.length >= 6) return;
+        // cap sandwich count
+        if (this.sandwiches.length >= MAX_SANDWICH_COUNT) return;
 
         const div = document.createElement("div");
         const sandwich = new Sandwich(div);
@@ -155,7 +135,24 @@ export class LocalPlayer extends Player {
 
         this.boardDiv.appendChild(div);
         sandwich.sandwichStartedCallback = this.createEmptyStack.bind(this);
-        sandwich.animationDoneCallback = this.sandwichAnimationEndCallback;
+        sandwich.animationDoneCallback = ((i: number) => {
+            if (sandwich.isClosed) {
+                // TODO: this has to be in com player also
+                // TODO: animation here (dissolve out div??) -- including time before deleting
+                //          b/c right now it just deletes right when last ingredient highlighted
+                // TODO: need a div with our score
+                this.score += sandwich.score;
+
+                // if we were at cap, deleting this means we need a new slot
+                if (this.sandwiches.length === MAX_SANDWICH_COUNT) {
+                    this.createEmptyStack();
+                }
+
+                this.sandwiches.splice(i);
+                div.remove();
+            }
+            this.sandwichAnimationEndCallback();
+        }).bind(this, this.sandwiches.length);
         this.sandwiches.push(sandwich);
     }
 

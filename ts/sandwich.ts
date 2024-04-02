@@ -1,19 +1,44 @@
 import { ANIM_TIMEOUT } from "./constants";
-import { Animatable, Ingredient, IngredientType } from "./types";
+import { Animatable, SandwichAnimateEvent, Ingredient, IngredientAddEvent, IngredientEffectEvent, IngredientType } from "./types";
+import { deepCopy } from "./util";
 
 export class Sandwich implements Animatable {
     ingredients: Ingredient[] = [];
-    private div: HTMLDivElement;
+    spans: HTMLSpanElement[] = [];
+    private ingredientDiv: HTMLDivElement;
+    private powerSpan: HTMLSpanElement;
     animationDoneCallback: () => void;
     sandwichStartedCallback: () => void;
-    private spansAddedThisTurn: HTMLSpanElement[] = [];
-    private namesAddedThisTurn: string[] = [];
+    private animateEvents: SandwichAnimateEvent[] = [];
+    isClosed: boolean;
+    score: number;
 
     constructor(div: HTMLDivElement) {
-        this.div = div;
+        const powerDiv = document.createElement("div");
+        powerDiv.innerText = "Power: ";
+        this.powerSpan = document.createElement("span");
+        this.powerSpan.innerText = "0";
+        powerDiv.appendChild(this.powerSpan);
+        div.appendChild(powerDiv);
+
+        this.ingredientDiv = document.createElement("div");
+        this.ingredientDiv.id = "sandwich";
+        div.appendChild(this.ingredientDiv);
+        
+        this.isClosed = false;
+        this.score = 0;
+    }
+
+    setScore() {
+        this.score = 0;
+        for (const ingredient of this.ingredients) {
+            this.score += ingredient.power;
+        }
+        this.powerSpan.innerText = this.score.toString();
     }
 
     close() {
+        this.isClosed = true;
         for (const ingredient of this.ingredients) {
             ingredient.effect(this);
         }
@@ -24,20 +49,25 @@ export class Sandwich implements Animatable {
             // we're starting a new sandwich, has to be a bread
             if (ing.type !== IngredientType.BREAD) return false;
         }
+        if (this.isClosed) {
+            // we already closed the sandwich, can't add another ingredient
+            // TODO: this is where the fried egg on top would go
+            return false;
+        }
         return true;
     }
 
     showIfValidTarget(ing: Ingredient) {
         if (this.canAddIngredient(ing)) {
-            this.div.style.background = "seagreen";
+            this.ingredientDiv.style.background = "seagreen";
         }
         else {
-            this.div.style.background = "tomato";
+            this.ingredientDiv.style.background = "tomato";
         }
     }
 
     clearTargetColors() {
-        this.div.style.background = "lightgrey";
+        this.ingredientDiv.style.background = "lightgrey";
     }
 
     addIngredient(ing: Ingredient): boolean {
@@ -46,11 +76,17 @@ export class Sandwich implements Animatable {
         const div = document.createElement("div");
         const span = document.createElement("span");
         span.textContent = ing.name;
-        this.ingredients.unshift(ing);
+        // this is where we copy the ingredient so effectts don't modify the
+        // source power I guess
+        this.ingredients.unshift(deepCopy(ing));
         div.appendChild(span);
-        this.div.insertBefore(div, this.div.firstChild);
-        this.spansAddedThisTurn.push(span);
-        this.namesAddedThisTurn.push(ing.name);
+        this.spans.push(span);
+        this.ingredientDiv.insertBefore(div, this.ingredientDiv.firstChild);
+
+        const addEvent = new IngredientAddEvent();
+        addEvent.name = ing.name;
+        addEvent.span = span;
+        this.animateEvents.push(addEvent);
 
         // condiments have instant effects
         if (ing.type === IngredientType.CONDIMENT) {
@@ -61,28 +97,58 @@ export class Sandwich implements Animatable {
         if (this.ingredients.length === 1) {
             this.sandwichStartedCallback();
         }
+        else {
+            // did we close the sandwich with this ingredient?
+            if (ing.type === IngredientType.BREAD) {
+                this.isClosed = true;
+            }
+        }
+
+        // recompute the expected score (no effects)
+        this.setScore();
 
         return true;
     }
 
     prepAnimate() {
-        for (const span of this.spansAddedThisTurn) {
-            span.textContent = "???";
+        for (const event of this.animateEvents) {
+            if (event instanceof IngredientAddEvent) {
+                event.span.textContent = "???";
+            }
         }
     }
 
     animate() {
-        if(this.namesAddedThisTurn.length === 0) this.animationDoneCallback();
+        if(this.animateEvents.length === 0) this.animationDoneCallback();
         else {
+            if (this.isClosed) {
+                // add all ingredient effects
+                for (let i = 0; i<this.ingredients.length; ++i) {
+                    const event = new IngredientEffectEvent;
+                    event.ing = this.ingredients[i];
+                    event.span = this.spans[i];
+                    this.animateEvents.push(event);
+                }
+            }
+
             setTimeout(this.animateInterval.bind(this, 0), ANIM_TIMEOUT);
         }
     }
 
     animateInterval(i: number) {
-        this.spansAddedThisTurn[i].textContent = this.namesAddedThisTurn[i];
-        if(i >= this.namesAddedThisTurn.length - 1) {
-            this.spansAddedThisTurn = [];
-            this.namesAddedThisTurn = [];
+        const event = this.animateEvents[i];
+
+        if (event instanceof IngredientAddEvent) {
+            event.span.textContent = event.name;
+        }
+        else if (event instanceof IngredientEffectEvent) {
+            event.span.style.fontWeight = "bold";
+            event.ing.effect(this);
+            this.setScore();
+        }
+
+        if(i >= this.animateEvents.length - 1) {
+            this.animateEvents = [];
             this.animationDoneCallback();
         }
         else {
