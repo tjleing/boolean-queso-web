@@ -1,4 +1,5 @@
 import { ActionPoints } from "./actionpoints";
+import { MAX_SANDWICH_COUNT } from "./constants";
 import { ingredients } from "./ingredients";
 import { Player } from "./player";
 import { Sandwich } from "./sandwich";
@@ -40,8 +41,8 @@ export class ComPlayer extends Player {
         this.createEmptyStack();
     }
     private createEmptyStack() {
-        // cap sandwich count at 6
-        if (this.sandwiches.length >= 6) return;
+        // cap sandwich count
+        if (this.sandwiches.length >= MAX_SANDWICH_COUNT) return;
         const div = document.createElement("div");
         const sandwich = new Sandwich(div);
         

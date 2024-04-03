@@ -31,7 +31,6 @@ export class Game {
         }
     }
 
-    // TODO: hmm actually we only apply the sandwich close effects _here_ -- interesting
     // TODO: turn order
     // TODO: guessing we want some sort of UI that's like "oh no your opponent has a win
     //          on the board, you'd better have closed a sandwich" during this

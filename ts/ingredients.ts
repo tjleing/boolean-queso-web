@@ -6,7 +6,7 @@ const whiteBread: Ingredient = {
     cost: 1,
     power: 1,
     effect: (sandwich: Sandwich) => {
-        sandwich.ingredients.map((ing) => {ing.power++; return ing;})
+        // sandwich.ingredients.map((ing) => {ing.power++; return ing;})
     },
     type: IngredientType.BREAD,
     effectText: "",
