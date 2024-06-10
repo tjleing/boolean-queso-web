@@ -28,10 +28,11 @@ export class LocalPlayer extends Player {
 
     constructor(ingredientDiv, boardDiv, scoresDiv) {
         super();
+        this.name = "Local Player";
         this.ingredientDiv = ingredientDiv;
         this.boardDiv = boardDiv;
         this.scoresDiv = scoresDiv;
-        this.sandwiches = [];
+        this.sandwiches = new Map();
     }
 
     startDeckSelect() {
@@ -129,11 +130,13 @@ export class LocalPlayer extends Player {
     }
 
     protected createEmptyStack() {
-        /* only local player */
+        // only local player, because we need the drag/drop handling
         const div = super.createEmptyStack();
-        div.ondrop = this.dropHandler.bind(this, this.sandwiches.length);
-        div.ondragenter = this.canDropCurrentlyHeld.bind(this, this.sandwiches.length);
-        div.ondragover = this.canDropCurrentlyHeld.bind(this, this.sandwiches.length);
+        if (div !== null) {
+            div.ondrop = this.dropHandler.bind(this, this.sandwichCount-1);
+            div.ondragenter = this.canDropCurrentlyHeld.bind(this, this.sandwichCount-1);
+            div.ondragover = this.canDropCurrentlyHeld.bind(this, this.sandwichCount-1);
+        }
 
         return div; // necessary to match types
     }
@@ -173,7 +176,7 @@ export class LocalPlayer extends Player {
             this.currentlyDraggedIngredient = ingredients.get(this.availableIngredients[ingId]);
 
             // show valid targets
-            for (const sandwich of this.sandwiches) {
+            for (const [_, sandwich] of this.sandwiches) {
                 sandwich.showIfValidTarget(this.currentlyDraggedIngredient);
             }
 
@@ -190,23 +193,23 @@ export class LocalPlayer extends Player {
         this.actionPoints.clearSpend();
 
         // clear sandwich colors
-        for (const sandwich of this.sandwiches) {
+        for (const [_, sandwich] of this.sandwiches) {
             sandwich.clearTargetColors();
         }
     }
 
     private canDropCurrentlyHeld(sandwichId: number, ev: DragEvent) {
-        if(this.sandwiches[sandwichId].canAddIngredient(this.currentlyDraggedIngredient)) {
+        if(this.sandwiches.get(sandwichId).canAddIngredient(this.currentlyDraggedIngredient)) {
             ev.preventDefault();
         }
     }
 
-    private dropHandler(stackId: number, ev: DragEvent) {
+    private dropHandler(sandwichId: number, ev: DragEvent) {
         ev.stopPropagation();
 
         const ingId = ev.dataTransfer.getData("ingId");
         const ing = ingredients.get(this.availableIngredients[ingId]);
-        if(this.sandwiches[stackId].addIngredient(ing)) {
+        if(this.sandwiches.get(sandwichId).addIngredient(ing)) {
             ev.preventDefault();
             this.ingredientCounts[ingId]--;
             this.actionPoints.spend();

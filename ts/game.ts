@@ -1,3 +1,4 @@
+import { SCORE_THRESHOLD } from "./constants";
 import { Player } from "./player";
 import { Animatable, TurnState } from "./types";
 
@@ -55,9 +56,22 @@ export class Game {
     protected playAnimation() {
         if(this.animationCounter >= this.animations.length) {
             this.turnState = TurnState.TURN_ACTIVE;
-            // TODO: ... unless the game is over, in that case go to that state instead
+
+            // TODO: better win logic, better end screen
+            let winners = [];
             for (const player of this.players) {
-                player.startTurn();
+                if (player.score >= SCORE_THRESHOLD) {
+                    winners.push(player.name);
+                }
+            }
+
+            if (winners.length !== 0) {
+                alert("Winner: " + winners.join(" and "));
+            }
+            else {
+                for (const player of this.players) {
+                    player.startTurn();
+                }
             }
         }
         else {

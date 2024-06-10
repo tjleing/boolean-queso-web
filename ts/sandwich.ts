@@ -5,6 +5,7 @@ import { deepCopy } from "./util";
 export class Sandwich implements Animatable {
     ingredients: Ingredient[] = [];
     spans: HTMLSpanElement[] = [];
+    protected id: number; // just unique per player
     private ingredientDiv: HTMLDivElement;
     private powerSpan: HTMLSpanElement;
     animationDoneCallback: () => void;
@@ -13,7 +14,7 @@ export class Sandwich implements Animatable {
     isClosed: boolean;
     score: number;
 
-    constructor(div: HTMLDivElement) {
+    constructor(div: HTMLDivElement, id: number) {
         const powerDiv = document.createElement("div");
         powerDiv.innerText = "Power: ";
         this.powerSpan = document.createElement("span");
@@ -27,6 +28,7 @@ export class Sandwich implements Animatable {
         
         this.isClosed = false;
         this.score = 0;
+        this.id = id;
     }
 
     setScore() {

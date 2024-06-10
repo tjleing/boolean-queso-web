@@ -22,9 +22,10 @@ export class ComPlayer extends Player {
 
     constructor(boardDiv, scoresDiv) {
         super();
+        this.name = "Computer Player";
         this.boardDiv = boardDiv;
         this.scoresDiv = scoresDiv;
-        this.sandwiches = [];
+        this.sandwiches = new Map();
     }
 
     startDeckSelect() {
@@ -89,15 +90,15 @@ export class ComPlayer extends Player {
                 // now pick a sandwich randomly from the ones that'll accept
                 // this ingredient
                 const workingSandwiches: number[] = [];
-                for (let i = 0; i<this.sandwiches.length; ++i) {
-                    if (this.sandwiches[i].canAddIngredient(ing)) {
-                        workingSandwiches.push(i);
+                for (const [id, sandwich] of this.sandwiches) {
+                    if (sandwich.canAddIngredient(ing)) {
+                        workingSandwiches.push(id);
                     }
                 }
                 if (workingSandwiches.length === 0) continue;
 
                 const randomSandwichIndex = Math.floor(Math.random() * workingSandwiches.length);
-                this.sandwiches[workingSandwiches[randomSandwichIndex]].addIngredient(ing);
+                this.sandwiches.get(workingSandwiches[randomSandwichIndex]).addIngredient(ing);
             }
         }
     }
