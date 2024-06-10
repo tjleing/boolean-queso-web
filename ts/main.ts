@@ -9,6 +9,6 @@ const player1 = new LocalPlayer(
 );
 const player2 = new ComPlayer(
     document.getElementById("opponentBoard"),
-    document.getElementById("myScores")
+    document.getElementById("opponentScores")
 );
 new Game([player1, player2]);

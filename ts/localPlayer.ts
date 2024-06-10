@@ -1,20 +1,16 @@
 import { ActionPoints } from "./actionpoints";
-import { MAX_SANDWICH_COUNT } from "./constants";
 import { ingredients } from "./ingredients";
 import { Player } from "./player";
 import { Sandwich } from "./sandwich";
 import { Animatable, Ingredient } from "./types";
 
 export class LocalPlayer extends Player {
-    score: number = 0;
     deckSelectEndCallback: () => void;
     turnEndCallback: () => void;
     animationEndCallback: () => void;
 
     private ingredientDiv: HTMLDivElement;
-    private boardDiv: HTMLDivElement;
     private scoresDiv: HTMLDivElement;
-    private scoreSpan: HTMLSpanElement;
     private availableIngredients: string[] = [
         "white bread",
         "bacon",
@@ -132,39 +128,14 @@ export class LocalPlayer extends Player {
         this.render();
     }
 
-    private createEmptyStack() {
-        // cap sandwich count
-        if (this.sandwiches.length >= MAX_SANDWICH_COUNT) return;
-
-        const div = document.createElement("div");
-        const sandwich = new Sandwich(div);
-        
+    protected createEmptyStack() {
+        /* only local player */
+        const div = super.createEmptyStack();
         div.ondrop = this.dropHandler.bind(this, this.sandwiches.length);
         div.ondragenter = this.canDropCurrentlyHeld.bind(this, this.sandwiches.length);
         div.ondragover = this.canDropCurrentlyHeld.bind(this, this.sandwiches.length);
 
-        this.boardDiv.appendChild(div);
-        sandwich.sandwichStartedCallback = this.createEmptyStack.bind(this);
-        sandwich.animationDoneCallback = ((i: number) => {
-            if (sandwich.isClosed) {
-                // TODO: this has to be in com player also
-                // TODO: animation here (dissolve out div??) -- including time before deleting
-                //          b/c right now it just deletes right when last ingredient highlighted
-                // TODO: need a div with our score
-                this.score += sandwich.score;
-                this.scoreSpan.innerText = this.score.toString();
-
-                // if we were at cap, deleting this means we need a new slot
-                if (this.sandwiches.length === MAX_SANDWICH_COUNT) {
-                    this.createEmptyStack();
-                }
-
-                this.sandwiches.splice(i);
-                div.remove();
-            }
-            this.sandwichAnimationEndCallback();
-        }).bind(this, this.sandwiches.length);
-        this.sandwiches.push(sandwich);
+        return div; // necessary to match types
     }
 
     // can this ingredient be played currently?  nothing about which stacks are possible right now

@@ -10,7 +10,6 @@ export class ComPlayer extends Player {
     turnEndCallback: () => void;
     animationEndCallback: () => void;
 
-    boardDiv: HTMLDivElement;
     scoresDiv: HTMLDivElement;
     private availableIngredients: string[] = [
         "white bread",
@@ -41,17 +40,13 @@ export class ComPlayer extends Player {
     private constructDOM() {
         this.boardDiv.innerHTML = "";
         this.createEmptyStack();
-    }
-    private createEmptyStack() {
-        // cap sandwich count
-        if (this.sandwiches.length >= MAX_SANDWICH_COUNT) return;
-        const div = document.createElement("div");
-        const sandwich = new Sandwich(div);
-        
-        this.boardDiv.appendChild(div);
-        sandwich.sandwichStartedCallback = this.createEmptyStack.bind(this);
-        sandwich.animationDoneCallback = this.sandwichAnimationEndCallback;
-        this.sandwiches.push(sandwich);
+
+        var div = document.createElement("div");
+        div.innerText = "Score: ";
+        this.scoreSpan = document.createElement("span");
+        div.appendChild(this.scoreSpan);
+        this.scoreSpan.innerText = "0";
+        this.scoresDiv.appendChild(div);
     }
 
     startTurn() {
