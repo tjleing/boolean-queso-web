@@ -4,6 +4,13 @@ then run a live server (I'm using VS code Live Server extension)
 
 probably need to do `npm install --save-dev webpack webpack-cli typescript ts-loader` first
 
+###
+local todos
+- add score div and sandwich closing logic to com player
+  - I think then the PR is done?
+  - oh maybe refactor constructDOM etc (including sandwich closing...) there's a lot of common stuff there
+  - sandwich close animation
+
 ## todos
 
 - [x] basic UI skeleton

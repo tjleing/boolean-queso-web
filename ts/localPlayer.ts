@@ -6,13 +6,15 @@ import { Sandwich } from "./sandwich";
 import { Animatable, Ingredient } from "./types";
 
 export class LocalPlayer extends Player {
-    score: number;
+    score: number = 0;
     deckSelectEndCallback: () => void;
     turnEndCallback: () => void;
     animationEndCallback: () => void;
 
     private ingredientDiv: HTMLDivElement;
     private boardDiv: HTMLDivElement;
+    private scoresDiv: HTMLDivElement;
+    private scoreSpan: HTMLSpanElement;
     private availableIngredients: string[] = [
         "white bread",
         "bacon",
@@ -28,10 +30,11 @@ export class LocalPlayer extends Player {
     // currently dragged item until it's dropped, so we need to store the info here
     private currentlyDraggedIngredient: Ingredient;
 
-    constructor(ingredientDiv, boardDiv) {
+    constructor(ingredientDiv, boardDiv, scoresDiv) {
         super();
         this.ingredientDiv = ingredientDiv;
         this.boardDiv = boardDiv;
+        this.scoresDiv = scoresDiv;
         this.sandwiches = [];
     }
 
@@ -58,21 +61,21 @@ export class LocalPlayer extends Player {
             div.draggable = true;
             const ingredientSpan = document.createElement("span");
             div.appendChild(ingredientSpan);
-            const tooltipDiv = document.createElement("span");
-            tooltipDiv.className = "tooltipText";
+            const tooltip = document.createElement("span");
+            tooltip.className = "tooltipText";
             const ing = ingredients.get(this.availableIngredients[i]);
-            tooltipDiv.innerHTML = `${ing.name}: ${ing.cost}/${ing.power}<br><br>`;
+            tooltip.innerHTML = `${ing.name}: ${ing.cost}/${ing.power}<br><br>`;
             if (ing.effectText !== "") {
-                tooltipDiv.innerHTML += `${ing.effectText}<br><br>`;
+                tooltip.innerHTML += `${ing.effectText}<br><br>`;
             }
-            tooltipDiv.innerHTML += `<i>${ing.flavorText}</i>`;
+            tooltip.innerHTML += `<i>${ing.flavorText}</i>`;
 
             div.ondragstart = this.dragCard.bind(this, i);
             div.ondragend = this.stopDrag.bind(this);
             div.onmouseover = this.hoverCard.bind(this, i);
             div.onmouseout = this.unhoverCard.bind(this);
 
-            div.appendChild(tooltipDiv);
+            div.appendChild(tooltip);
             this.ingredientDiv.appendChild(div);
             this.ingredientDOMs.push(ingredientSpan);
         }
@@ -80,6 +83,13 @@ export class LocalPlayer extends Player {
         // add an inital empty stack to add bread, starting a sandwich
         this.boardDiv.innerHTML = "";
         this.createEmptyStack();
+
+        var div = document.createElement("div");
+        div.innerText = "Score: ";
+        this.scoreSpan = document.createElement("span");
+        div.appendChild(this.scoreSpan);
+        this.scoreSpan.innerText = "0";
+        this.scoresDiv.appendChild(div);
 
         this.render();
 
@@ -142,6 +152,7 @@ export class LocalPlayer extends Player {
                 //          b/c right now it just deletes right when last ingredient highlighted
                 // TODO: need a div with our score
                 this.score += sandwich.score;
+                this.scoreSpan.innerText = this.score.toString();
 
                 // if we were at cap, deleting this means we need a new slot
                 if (this.sandwiches.length === MAX_SANDWICH_COUNT) {

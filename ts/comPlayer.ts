@@ -11,6 +11,7 @@ export class ComPlayer extends Player {
     animationEndCallback: () => void;
 
     boardDiv: HTMLDivElement;
+    scoresDiv: HTMLDivElement;
     private availableIngredients: string[] = [
         "white bread",
         "bacon",
@@ -20,9 +21,10 @@ export class ComPlayer extends Player {
     private ingredientCounts: number[] = Array(this.availableIngredients.length).fill(0);
     private actionPoints = new ActionPoints();
 
-    constructor(boardDiv) {
+    constructor(boardDiv, scoresDiv) {
         super();
         this.boardDiv = boardDiv;
+        this.scoresDiv = scoresDiv;
         this.sandwiches = [];
     }
 

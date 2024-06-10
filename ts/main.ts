@@ -4,9 +4,11 @@ import { LocalPlayer } from "./localPlayer";
 
 const player1 = new LocalPlayer(
     document.getElementById("ingredients"),
-    document.getElementById("myBoard")
+    document.getElementById("myBoard"),
+    document.getElementById("myScores")
 );
 const player2 = new ComPlayer(
-    document.getElementById("opponentBoard")
+    document.getElementById("opponentBoard"),
+    document.getElementById("myScores")
 );
 new Game([player1, player2]);
