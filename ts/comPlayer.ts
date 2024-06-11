@@ -10,7 +10,7 @@ export class ComPlayer extends Player {
     turnEndCallback: () => void;
     animationEndCallback: () => void;
 
-    boardDiv: HTMLDivElement;
+    scoresDiv: HTMLDivElement;
     private availableIngredients: string[] = [
         "white bread",
         "bacon",
@@ -20,10 +20,12 @@ export class ComPlayer extends Player {
     private ingredientCounts: number[] = Array(this.availableIngredients.length).fill(0);
     private actionPoints = new ActionPoints();
 
-    constructor(boardDiv) {
+    constructor(boardDiv, scoresDiv) {
         super();
+        this.name = "Computer Player";
         this.boardDiv = boardDiv;
-        this.sandwiches = [];
+        this.scoresDiv = scoresDiv;
+        this.sandwiches = new Map();
     }
 
     startDeckSelect() {
@@ -39,17 +41,13 @@ export class ComPlayer extends Player {
     private constructDOM() {
         this.boardDiv.innerHTML = "";
         this.createEmptyStack();
-    }
-    private createEmptyStack() {
-        // cap sandwich count
-        if (this.sandwiches.length >= MAX_SANDWICH_COUNT) return;
-        const div = document.createElement("div");
-        const sandwich = new Sandwich(div);
-        
-        this.boardDiv.appendChild(div);
-        sandwich.sandwichStartedCallback = this.createEmptyStack.bind(this);
-        sandwich.animationDoneCallback = this.sandwichAnimationEndCallback;
-        this.sandwiches.push(sandwich);
+
+        var div = document.createElement("div");
+        div.innerText = "Score: ";
+        this.scoreSpan = document.createElement("span");
+        div.appendChild(this.scoreSpan);
+        this.scoreSpan.innerText = "0";
+        this.scoresDiv.appendChild(div);
     }
 
     startTurn() {
@@ -92,15 +90,15 @@ export class ComPlayer extends Player {
                 // now pick a sandwich randomly from the ones that'll accept
                 // this ingredient
                 const workingSandwiches: number[] = [];
-                for (let i = 0; i<this.sandwiches.length; ++i) {
-                    if (this.sandwiches[i].canAddIngredient(ing)) {
-                        workingSandwiches.push(i);
+                for (const [id, sandwich] of this.sandwiches) {
+                    if (sandwich.canAddIngredient(ing)) {
+                        workingSandwiches.push(id);
                     }
                 }
                 if (workingSandwiches.length === 0) continue;
 
                 const randomSandwichIndex = Math.floor(Math.random() * workingSandwiches.length);
-                this.sandwiches[workingSandwiches[randomSandwichIndex]].addIngredient(ing);
+                this.sandwiches.get(workingSandwiches[randomSandwichIndex]).addIngredient(ing);
             }
         }
     }

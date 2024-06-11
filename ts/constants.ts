@@ -1,2 +1,3 @@
-export const ANIM_TIMEOUT = 1000;
+export const ANIM_TIMEOUT = 250;
 export const MAX_SANDWICH_COUNT = 6;
+export const SCORE_THRESHOLD = 100;

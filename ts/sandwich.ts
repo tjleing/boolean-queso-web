@@ -5,6 +5,7 @@ import { deepCopy } from "./util";
 export class Sandwich implements Animatable {
     ingredients: Ingredient[] = [];
     spans: HTMLSpanElement[] = [];
+    protected id: number; // just unique per player
     private ingredientDiv: HTMLDivElement;
     private powerSpan: HTMLSpanElement;
     animationDoneCallback: () => void;
@@ -13,7 +14,7 @@ export class Sandwich implements Animatable {
     isClosed: boolean;
     score: number;
 
-    constructor(div: HTMLDivElement) {
+    constructor(div: HTMLDivElement, id: number) {
         const powerDiv = document.createElement("div");
         powerDiv.innerText = "Power: ";
         this.powerSpan = document.createElement("span");
@@ -27,6 +28,7 @@ export class Sandwich implements Animatable {
         
         this.isClosed = false;
         this.score = 0;
+        this.id = id;
     }
 
     setScore() {
@@ -76,10 +78,22 @@ export class Sandwich implements Animatable {
         const div = document.createElement("div");
         const span = document.createElement("span");
         span.textContent = ing.name;
-        // this is where we copy the ingredient so effectts don't modify the
+        div.appendChild(span);
+
+        // add tooltip to sandwich info too
+        div.className = "tooltip";
+        const tooltip = document.createElement("span");
+        tooltip.className = "tooltipText";
+        tooltip.innerHTML = `${ing.name}: ${ing.cost}/${ing.power}<br><br>`;
+        if (ing.effectText !== "") {
+            tooltip.innerHTML += `${ing.effectText}<br><br>`;
+        }
+        tooltip.innerHTML += `<i>${ing.flavorText}</i>`;
+        div.appendChild(tooltip);
+
+        // this is where we copy the ingredient so effects don't modify the
         // source power I guess
         this.ingredients.unshift(deepCopy(ing));
-        div.appendChild(span);
         this.spans.push(span);
         this.ingredientDiv.insertBefore(div, this.ingredientDiv.firstChild);
 

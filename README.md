@@ -14,12 +14,15 @@ probably need to do `npm install --save-dev webpack webpack-cli typescript ts-lo
 - [x] play new sandwiches with bread
 - [x] add ingredient to sandwich
   - [x] apply effect if condiment
-- [ ] close sandwich: get points and apply effects
+- [x] close sandwich: get points and apply effects
+- [x] win condition
+- [ ] close sandwich animation
 - QOL:
   - [ ] move played ingredients between sandwiches
   - [ ] hover sandwich ingredients to see what they do
   - [ ] they should probably also have a UI to see at least the power stats and like an expected total power on complete of the sandwich
   - [ ] need to disable dragging while anims are playing
+  - [ ] better looking win (also like button to redirect to main screen)
 - [ ] start screen where you can choose a deck
 - [x] AI opponent
 - [ ] networking opponent

@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "ES5",
+    "target": "es2015",
     "outDir": "js",
-    "rootDir": "ts"
+    "rootDir": "ts",
   }
 }
