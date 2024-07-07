@@ -3,6 +3,16 @@
     <script>var exports = {};</script>
     <script src="./dist/bundle.js" type="module"></script>
     <link rel="stylesheet" href="./style.css">
+    <script>
+        // fix the tooltip z-index stuff
+        document.addEventListener('DOMContentLoaded', () => {
+            const ingredients = document.querySelectorAll('#ingredients > div');
+            const maxIngredients = ingredients.length;
+            ingredients.forEach((ingredient, index) => {
+                ingredient.style.setProperty('z-index', (maxIngredients - index).toString());
+            });
+        });
+    </script>
 </head>
 <body>
     <div id="main">

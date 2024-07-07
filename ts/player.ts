@@ -45,6 +45,7 @@ export class Player {
 
                 // TODO: don't just delete the sandwich, we need to keep it around for
                 //       weird ingredient interactions
+                //       it'll be something like a new object old_sandwiches
                 this.sandwiches.delete(key);
 
                 // if we were at cap, deleting this means we need a new slot

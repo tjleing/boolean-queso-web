@@ -3,7 +3,7 @@ import { ingredients } from "./ingredients";
 import { Player } from "./player";
 import { Sandwich } from "./sandwich";
 
-export class ComPlayer extends Player {
+export class NetworkPlayer extends Player {
     score: number;
     deckSelectEndCallback: () => void;
     turnEndCallback: () => void;

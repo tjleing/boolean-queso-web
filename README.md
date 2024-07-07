@@ -17,8 +17,9 @@ probably need to do `npm install --save-dev webpack webpack-cli typescript ts-lo
 - [x] close sandwich: get points and apply effects
 - [x] win condition
 - [ ] close sandwich animation
+- [ ] put closed sandwiches on sidebar
 - QOL:
-  - [ ] move played ingredients between sandwiches
+  - [ ] move played ingredients between sandwiches before end turn
   - [ ] hover sandwich ingredients to see what they do
   - [ ] they should probably also have a UI to see at least the power stats and like an expected total power on complete of the sandwich
   - [ ] need to disable dragging while anims are playing
