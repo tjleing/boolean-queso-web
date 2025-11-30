@@ -10,26 +10,35 @@ const gameSessions = new Map();
 // Map player WebSocket to their session
 const playerSessions = new Map();
 
+// Helper function for formatted logging
+function log(message, type = 'INFO') {
+  const timestamp = new Date().toISOString();
+  const prefix = `[${timestamp}] [${type}]`;
+  console.log(`${prefix} ${message}`);
+}
+
 wss.on('connection', (ws, req) => {
-  console.log('New WebSocket connection');
+  const clientIp = req.socket.remoteAddress || 'unknown';
+  log(`New WebSocket connection from ${clientIp}`, 'CONNECTION');
 
   ws.on('message', (message) => {
     try {
       const data = JSON.parse(message.toString());
+      log(`Received message: ${data.type}`, 'MESSAGE');
       handleMessage(ws, data);
     } catch (error) {
-      console.error('Error parsing message:', error);
+      log(`Error parsing message: ${error.message}`, 'ERROR');
       ws.send(JSON.stringify({ type: 'ERROR', message: 'Invalid message format' }));
     }
   });
 
   ws.on('close', () => {
-    console.log('WebSocket connection closed');
+    log('WebSocket connection closed', 'CONNECTION');
     handleDisconnect(ws);
   });
 
   ws.on('error', (error) => {
-    console.error('WebSocket error:', error);
+    log(`WebSocket error: ${error.message}`, 'ERROR');
     handleDisconnect(ws);
   });
 });
@@ -49,7 +58,7 @@ function handleMessage(ws, data) {
       handleBoardUpdate(ws, data);
       break;
     default:
-      console.log('Unknown message type:', data.type);
+      log(`Unknown message type: ${data.type}`, 'WARNING');
   }
 }
 
@@ -63,6 +72,7 @@ function handleJoinGame(ws, data) {
       players: [],
       ready: false
     });
+    log(`Created new game session: ${gameId}`, 'SESSION');
   }
 
   const session = gameSessions.get(gameId);
@@ -75,7 +85,8 @@ function handleJoinGame(ws, data) {
   });
   playerSessions.set(ws, { sessionId: gameId, playerId });
 
-  console.log(`Player ${playerId} joined game ${gameId} (${session.players.length}/2 players)`);
+  log(`✅ Player ${playerId} joined game "${gameId}" (${session.players.length}/2 players)`, 'PLAYER_JOIN');
+  log(`   Active sessions: ${gameSessions.size}, Total players: ${playerSessions.size}`, 'STATUS');
 
   // Notify player they joined
   ws.send(JSON.stringify({
@@ -87,6 +98,7 @@ function handleJoinGame(ws, data) {
   // If we have 2 players, notify both that the game can start
   if (session.players.length === 2) {
     session.ready = true;
+    log(`🎮 Game "${gameId}" is ready! Both players connected.`, 'GAME_READY');
     session.players.forEach(player => {
       player.ws.send(JSON.stringify({
         type: 'GAME_READY',
@@ -98,10 +110,15 @@ function handleJoinGame(ws, data) {
 
 function handleDeckSelected(ws, data) {
   const playerInfo = playerSessions.get(ws);
-  if (!playerInfo) return;
+  if (!playerInfo) {
+    log('Deck selected from unknown player', 'WARNING');
+    return;
+  }
 
   const session = gameSessions.get(playerInfo.sessionId);
   if (!session) return;
+
+  log(`Player ${playerInfo.playerId} selected deck in game "${playerInfo.sessionId}"`, 'GAME_EVENT');
 
   // Broadcast deck selection to other player
   session.players.forEach(player => {
@@ -120,6 +137,9 @@ function handleTurnEnd(ws, data) {
 
   const session = gameSessions.get(playerInfo.sessionId);
   if (!session) return;
+
+  const actionCount = Array.isArray(data.actions) ? data.actions.length : 0;
+  log(`Player ${playerInfo.playerId} ended turn with ${actionCount} actions in game "${playerInfo.sessionId}"`, 'GAME_EVENT');
 
   // Broadcast turn end with actions to other player
   session.players.forEach(player => {
@@ -140,6 +160,8 @@ function handleBoardUpdate(ws, data) {
   const session = gameSessions.get(playerInfo.sessionId);
   if (!session) return;
 
+  log(`Board update from player ${playerInfo.playerId} in game "${playerInfo.sessionId}"`, 'GAME_EVENT');
+
   // Broadcast board update to other player
   session.players.forEach(player => {
     if (player.ws !== ws) {
@@ -157,6 +179,8 @@ function handleDisconnect(ws) {
   if (playerInfo) {
     const session = gameSessions.get(playerInfo.sessionId);
     if (session) {
+      log(`❌ Player ${playerInfo.playerId} disconnected from game "${playerInfo.sessionId}"`, 'PLAYER_LEAVE');
+      
       // Remove player from session
       session.players = session.players.filter(p => p.ws !== ws);
       
@@ -171,14 +195,21 @@ function handleDisconnect(ws) {
       // Clean up empty sessions
       if (session.players.length === 0) {
         gameSessions.delete(playerInfo.sessionId);
+        log(`Removed empty game session: ${playerInfo.sessionId}`, 'SESSION');
+      } else {
+        log(`Game "${playerInfo.sessionId}" now has ${session.players.length} player(s)`, 'STATUS');
       }
     }
     playerSessions.delete(ws);
+    log(`Active sessions: ${gameSessions.size}, Total players: ${playerSessions.size}`, 'STATUS');
   }
 }
 
 server.listen(PORT, () => {
-  console.log(`Game server running on port ${PORT}`);
-  console.log(`To expose via cloudflared, run: cloudflared tunnel --url http://localhost:${PORT}`);
+  log('═══════════════════════════════════════════════════════════', 'SERVER');
+  log(`🚀 Game server started on port ${PORT}`, 'SERVER');
+  log(`📡 WebSocket server ready for connections`, 'SERVER');
+  log(`🌐 To expose via cloudflared, run: cloudflared tunnel --url http://localhost:${PORT}`, 'SERVER');
+  log('═══════════════════════════════════════════════════════════', 'SERVER');
 });
 
