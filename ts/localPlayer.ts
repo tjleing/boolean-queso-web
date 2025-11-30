@@ -3,6 +3,7 @@ import { ingredients } from "./ingredients";
 import { Player } from "./player";
 import { Sandwich } from "./sandwich";
 import { Animatable, Ingredient } from "./types";
+import { GameClient } from "./remoteGameClient";
 
 export class LocalPlayer extends Player {
     deckSelectEndCallback: () => void;
@@ -11,6 +12,7 @@ export class LocalPlayer extends Player {
 
     private ingredientDiv: HTMLDivElement;
     private scoresDiv: HTMLDivElement;
+    private gameClient: GameClient | null = null;
     private availableIngredients: string[] = [
         "white bread",
         "bacon",
@@ -26,17 +28,23 @@ export class LocalPlayer extends Player {
     // currently dragged item until it's dropped, so we need to store the info here
     private currentlyDraggedIngredient: Ingredient;
 
-    constructor(ingredientDiv, boardDiv, scoresDiv) {
+    constructor(ingredientDiv, boardDiv, scoresDiv, gameClient?: GameClient) {
         super();
         this.name = "Local Player";
         this.ingredientDiv = ingredientDiv;
         this.boardDiv = boardDiv;
         this.scoresDiv = scoresDiv;
         this.sandwiches = new Map();
+        this.gameClient = gameClient || null;
     }
 
     startDeckSelect() {
         // TODO: actually select a deck here
+        if (this.gameClient) {
+            this.gameClient.sendMessageToGameServer({
+                type: 'DECK_SELECTED'
+            });
+        }
         this.deckSelectEndCallback();
     }
 
@@ -114,6 +122,15 @@ export class LocalPlayer extends Player {
     private endTurn() {
         this.endTurnButton.textContent = "waiting...";
         this.endTurnButton.disabled = true;
+        
+        // Send turn end message with actions
+        if (this.gameClient) {
+            const actions = this.getAnimationActions().map((sandwich) => sandwich.serialize());
+            this.gameClient.sendMessageToGameServer({
+                type: 'TURN_END',
+                actions,
+            });
+        }
         
         this.turnEndCallback();
     }
