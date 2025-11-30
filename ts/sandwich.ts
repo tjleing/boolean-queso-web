@@ -1,6 +1,7 @@
 import { ANIM_TIMEOUT } from "./constants";
-import { Animatable, SandwichAnimateEvent, Ingredient, IngredientAddEvent, IngredientEffectEvent, IngredientType } from "./types";
+import { Animatable, SandwichAnimateEvent, Ingredient, IngredientAddEvent, IngredientEffectEvent, IngredientType, SerializedSandwich, DeserializedSandwich } from "./types";
 import { deepCopy } from "./util";
+import { ingredients as ingredientLibrary } from "./ingredients";
 
 export class Sandwich implements Animatable {
     ingredients: Ingredient[] = [];
@@ -168,5 +169,29 @@ export class Sandwich implements Animatable {
         else {
             setTimeout(this.animateInterval.bind(this, i+1), ANIM_TIMEOUT);
         }
+    }
+
+    serialize(): SerializedSandwich {
+        return {
+            id: this.id,
+            ingredients: this.ingredients.map((ingredient) => ingredient.name),
+        };
+    }
+
+    static deserialize(data: SerializedSandwich): DeserializedSandwich {
+        const deserializedIngredients: Ingredient[] = [];
+        for (const ingredientName of data.ingredients) {
+            const ingredient = ingredientLibrary.get(ingredientName);
+            if (!ingredient) {
+                console.warn(`Unknown ingredient during sandwich deserialization: ${ingredientName}`);
+                continue;
+            }
+            deserializedIngredients.push(deepCopy(ingredient));
+        }
+
+        return {
+            id: data.id,
+            ingredients: deserializedIngredients,
+        };
     }
 }
